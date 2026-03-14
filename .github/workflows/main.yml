@@ -18,8 +18,12 @@ jobs:
       - name: Đăng nhập Tailscale (bấm link trong log)
         run: |
           Start-Process "C:\Program Files\Tailscale\tailscale.exe" -ArgumentList "up" -NoNewWindow
-          Start-Sleep -Seconds 15
+          Start-Sleep -Seconds 3
           & "C:\Program Files\Tailscale\tailscale.exe" status
+          Write-Host "Chờ bạn đăng nhập..."
+          Start-Sleep -Seconds 60
+          & "C:\Program Files\Tailscale\tailscale.exe" ip -4
+        continue-on-error: true
 
       - name: Tải và cài Sunshine
         run: |
