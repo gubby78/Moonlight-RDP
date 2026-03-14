@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Cài và kết nối Tailscale
         run: |
-          Invoke-WebRequest -Uri "https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe" -OutFile "tailscale-setup.exe"
+          curl -L -o tailscale-setup.exe "https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe"
           Start-Process -FilePath "tailscale-setup.exe" -ArgumentList "/S" -Wait
           Start-Sleep -Seconds 5
           & "C:\Program Files\Tailscale\tailscale.exe" up --authkey=${{ secrets.TAILSCALE_AUTHKEY }} --accept-routes
@@ -19,9 +19,9 @@ jobs:
 
       - name: Tải và cài Sunshine
         run: |
-          $url = "https://github.com/LizardByte/Sunshine/releases/latest/download/sunshine-windows-installer.exe"
-          Invoke-WebRequest -Uri $url -OutFile "sunshine-installer.exe"
+          curl -L -o sunshine-installer.exe "https://github.com/LizardByte/Sunshine/releases/download/v0.23.1/sunshine-windows-installer.exe"
           Start-Process -FilePath "sunshine-installer.exe" -ArgumentList "/S" -Wait
+          Start-Sleep -Seconds 10
 
       - name: Khởi động Sunshine
         run: |
@@ -32,4 +32,5 @@ jobs:
       - name: Giữ session sống
         run: |
           & "C:\Program Files\Tailscale\tailscale.exe" ip -4
+          Write-Host "Kết nối Moonlight vào IP trên!"
           Start-Sleep -Seconds 21600
