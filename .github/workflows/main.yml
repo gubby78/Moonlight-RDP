@@ -23,7 +23,7 @@ jobs:
           Start-Sleep -Seconds 60
         continue-on-error: true
 
-      - name: Tạo màn hình ảo bằng RDP
+      - name: Bật RDP + Đặt mật khẩu Windows
         run: |
           # Bật RDP
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -value 0
@@ -33,14 +33,17 @@ jobs:
           # Đặt mật khẩu Windows
           $username = $env:USERNAME
           net user $username "Admin123!"
-          Write-Host "Username Windows: $username"
-          Write-Host "Password Windows: Admin123!"
 
-          # Tự kết nối RDP vào localhost để tạo display
+          Write-Host "=========================================="
+          Write-Host "THÔNG TIN RDP:"
+          Write-Host "Username: $username"
+          Write-Host "Password: Admin123!"
+          Write-Host "=========================================="
+
+          # Tự RDP vào localhost để tạo màn hình ảo
           cmdkey /generic:localhost /user:$username /pass:"Admin123!"
           Start-Process "mstsc" -ArgumentList "/v:localhost /f" -NoNewWindow
           Start-Sleep -Seconds 15
-          Write-Host "Màn hình ảo đã được tạo!"
 
       - name: Tải và cài Sunshine
         run: |
@@ -48,7 +51,7 @@ jobs:
           Start-Process -FilePath "sunshine-installer.exe" -ArgumentList "/S" -Wait
           Start-Sleep -Seconds 10
 
-      - name: Cấu hình Sunshine
+      - name: Cấu hình và khởi động Sunshine
         run: |
           $configDir = "$env:APPDATA\Sunshine"
           New-Item -ItemType Directory -Force -Path $configDir
@@ -57,17 +60,21 @@ jobs:
           username=admin
           password=admin123
           "@ | Out-File "$configDir\sunshine.conf" -Encoding utf8
-
-      - name: Khởi động Sunshine
-        run: |
           Start-Process "C:\Program Files\Sunshine\sunshine.exe"
           Start-Sleep -Seconds 10
 
-      - name: Hiện IP để kết nối
+      - name: Hiện thông tin kết nối
         run: |
           $ip = & "C:\Program Files\Tailscale\tailscale.exe" ip -4
+          $username = $env:USERNAME
           Write-Host "=========================================="
-          Write-Host "IP TAILSCALE: $ip"
+          Write-Host "CÁCH 1 - RDP:"
+          Write-Host "IP: $ip"
+          Write-Host "Username: $username"
+          Write-Host "Password: Admin123!"
+          Write-Host "------------------------------------------"
+          Write-Host "CÁCH 2 - MOONLIGHT:"
+          Write-Host "IP Tailscale: $ip"
           Write-Host "Vào trình duyệt: https://$($ip):47990"
           Write-Host "Username Sunshine: admin"
           Write-Host "Password Sunshine: admin123"
