@@ -9,13 +9,17 @@ jobs:
     timeout-minutes: 360
 
     steps:
-      - name: Cài và kết nối Tailscale
+      - name: Cài Tailscale
         run: |
           curl -L -o tailscale-setup.exe "https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe"
           Start-Process -FilePath "tailscale-setup.exe" -ArgumentList "/S" -Wait
           Start-Sleep -Seconds 5
-          & "C:\Program Files\Tailscale\tailscale.exe" up --authkey=${{ secrets.TAILSCALE_AUTHKEY }} --accept-routes
-          & "C:\Program Files\Tailscale\tailscale.exe" ip -4
+
+      - name: Đăng nhập Tailscale (bấm link trong log)
+        run: |
+          Start-Process "C:\Program Files\Tailscale\tailscale.exe" -ArgumentList "up" -NoNewWindow
+          Start-Sleep -Seconds 15
+          & "C:\Program Files\Tailscale\tailscale.exe" status
 
       - name: Tải và cài Sunshine
         run: |
@@ -27,10 +31,8 @@ jobs:
         run: |
           Start-Process "C:\Program Files\Sunshine\sunshine.exe"
           Start-Sleep -Seconds 5
-          Write-Host "Sunshine đã chạy!"
 
       - name: Giữ session sống
         run: |
           & "C:\Program Files\Tailscale\tailscale.exe" ip -4
-          Write-Host "Kết nối Moonlight vào IP trên!"
           Start-Sleep -Seconds 21600
