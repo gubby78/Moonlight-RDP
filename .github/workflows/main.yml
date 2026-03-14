@@ -23,6 +23,25 @@ jobs:
           Start-Sleep -Seconds 60
         continue-on-error: true
 
+      - name: Tạo màn hình ảo bằng RDP
+        run: |
+          # Bật RDP
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -value 0
+          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
+          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -value 0
+
+          # Đặt mật khẩu Windows
+          $username = $env:USERNAME
+          net user $username "Admin123!"
+          Write-Host "Username Windows: $username"
+          Write-Host "Password Windows: Admin123!"
+
+          # Tự kết nối RDP vào localhost để tạo display
+          cmdkey /generic:localhost /user:$username /pass:"Admin123!"
+          Start-Process "mstsc" -ArgumentList "/v:localhost /f" -NoNewWindow
+          Start-Sleep -Seconds 15
+          Write-Host "Màn hình ảo đã được tạo!"
+
       - name: Tải và cài Sunshine
         run: |
           curl -L -o sunshine-installer.exe "https://github.com/LizardByte/Sunshine/releases/download/v0.23.1/sunshine-windows-installer.exe"
@@ -49,9 +68,9 @@ jobs:
           $ip = & "C:\Program Files\Tailscale\tailscale.exe" ip -4
           Write-Host "=========================================="
           Write-Host "IP TAILSCALE: $ip"
-          Write-Host "Vào trình duyệt điện thoại gõ: https://$($ip):47990"
-          Write-Host "Username: admin"
-          Write-Host "Password: admin123"
+          Write-Host "Vào trình duyệt: https://$($ip):47990"
+          Write-Host "Username Sunshine: admin"
+          Write-Host "Password Sunshine: admin123"
           Write-Host "Vào tab PIN -> nhập PIN từ Moonlight"
           Write-Host "=========================================="
 
