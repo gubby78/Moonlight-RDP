@@ -1,34 +1,27 @@
 name: Sunshine Stream
 
 on:
-  workflow_dispatch:  # Chạy thủ công khi cần
+  workflow_dispatch:
 
 jobs:
   stream:
     runs-on: windows-latest
-    timeout-minutes: 360  # Tối đa 6 tiếng
+    timeout-minutes: 360
 
     steps:
-      - name: Kết nối Tailscale
-        uses: tailscale/github-action@v2
-        with:
-          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
-          args: --accept-routes
+      - name: Cài và kết nối Tailscale
+        run: |
+          Invoke-WebRequest -Uri "https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe" -OutFile "tailscale-setup.exe"
+          Start-Process -FilePath "tailscale-setup.exe" -ArgumentList "/S" -Wait
+          Start-Sleep -Seconds 5
+          & "C:\Program Files\Tailscale\tailscale.exe" up --authkey=${{ secrets.TAILSCALE_AUTHKEY }} --accept-routes
+          & "C:\Program Files\Tailscale\tailscale.exe" ip -4
 
       - name: Tải và cài Sunshine
         run: |
           $url = "https://github.com/LizardByte/Sunshine/releases/latest/download/sunshine-windows-installer.exe"
           Invoke-WebRequest -Uri $url -OutFile "sunshine-installer.exe"
           Start-Process -FilePath "sunshine-installer.exe" -ArgumentList "/S" -Wait
-
-      - name: Cấu hình Sunshine
-        run: |
-          $configPath = "$env:APPDATA\Sunshine\sunshine.conf"
-          @"
-          encoder=software
-          username=${{ secrets.SUNSHINE_USER }}
-          password=${{ secrets.SUNSHINE_PASS }}
-          "@ | Out-File -FilePath $configPath -Encoding utf8
 
       - name: Khởi động Sunshine
         run: |
@@ -38,8 +31,5 @@ jobs:
 
       - name: Giữ session sống
         run: |
-          Write-Host "Đang chạy... Vào Moonlight để kết nối!"
-          # Lấy IP Tailscale để kết nối
-          tailscale ip -4
-          # Giữ cho workflow không tắt
+          & "C:\Program Files\Tailscale\tailscale.exe" ip -4
           Start-Sleep -Seconds 21600
