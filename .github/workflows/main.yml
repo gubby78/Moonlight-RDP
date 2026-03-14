@@ -25,25 +25,16 @@ jobs:
 
       - name: Bật RDP + Đặt mật khẩu Windows
         run: |
-          # Bật RDP
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -value 0
-
-          # Đặt mật khẩu Windows
           $username = $env:USERNAME
           net user $username "Admin123!"
-
-          Write-Host "=========================================="
-          Write-Host "THÔNG TIN RDP:"
-          Write-Host "Username: $username"
-          Write-Host "Password: Admin123!"
-          Write-Host "=========================================="
-
-          # Tự RDP vào localhost để tạo màn hình ảo
           cmdkey /generic:localhost /user:$username /pass:"Admin123!"
           Start-Process "mstsc" -ArgumentList "/v:localhost /f" -NoNewWindow
           Start-Sleep -Seconds 15
+          Write-Host "Username RDP: $username"
+          Write-Host "Password RDP: Admin123!"
 
       - name: Tải và cài Sunshine
         run: |
@@ -53,6 +44,10 @@ jobs:
 
       - name: Cấu hình và khởi động Sunshine
         run: |
+          netsh advfirewall firewall add rule name="Sunshine TCP" dir=in action=allow protocol=TCP localport=47990
+          netsh advfirewall firewall add rule name="Sunshine UDP" dir=in action=allow protocol=UDP localport=47998-48010
+          netsh advfirewall firewall add rule name="Sunshine TCP 2" dir=in action=allow protocol=TCP localport=48010
+
           $configDir = "$env:APPDATA\Sunshine"
           New-Item -ItemType Directory -Force -Path $configDir
           @"
@@ -60,8 +55,16 @@ jobs:
           username=admin
           password=admin123
           "@ | Out-File "$configDir\sunshine.conf" -Encoding utf8
+
           Start-Process "C:\Program Files\Sunshine\sunshine.exe"
           Start-Sleep -Seconds 10
+
+          $process = Get-Process sunshine -ErrorAction SilentlyContinue
+          if ($process) {
+            Write-Host "Sunshine đang chạy!"
+          } else {
+            Write-Host "Sunshine CHƯA chạy!"
+          }
 
       - name: Hiện thông tin kết nối
         run: |
