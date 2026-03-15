@@ -30,8 +30,6 @@ jobs:
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -value 0
           $username = $env:USERNAME
           net user $username "Admin123!"
-
-          # Tạo màn hình ảo bằng RDP localhost
           cmdkey /generic:localhost /user:$username /pass:"Admin123!"
           Start-Process "mstsc" -ArgumentList "/v:localhost /w:1920 /h:1080" -NoNewWindow
           Start-Sleep -Seconds 20
@@ -57,6 +55,10 @@ jobs:
           username=admin
           password=admin123
           "@ | Out-File "$configDir\sunshine.conf" -Encoding utf8
+
+          # Tự tạo tài khoản admin/admin123 luôn không cần nhập tay
+          Start-Process "C:\Program Files\Sunshine\sunshine.exe" -ArgumentList "--creds admin admin123" -Wait -NoNewWindow
+          Start-Sleep -Seconds 5
 
           Start-Process "C:\Program Files\Sunshine\sunshine.exe"
           Start-Sleep -Seconds 15
