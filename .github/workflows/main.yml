@@ -1,4 +1,4 @@
-name: Sunshine Stream
+name: Deeplink Stream
 
 on:
   workflow_dispatch:
@@ -9,81 +9,21 @@ jobs:
     timeout-minutes: 360
 
     steps:
-      - name: Cài Tailscale
+      - name: Tải và cài Deeplink
         run: |
-          curl -L -o tailscale-setup.exe "https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe"
-          Start-Process -FilePath "tailscale-setup.exe" -ArgumentList "/S" -Wait
-          Start-Sleep -Seconds 5
-
-      - name: Đăng nhập Tailscale
-        run: |
-          Start-Process "C:\Program Files\Tailscale\tailscale.exe" -ArgumentList "up" -NoNewWindow
-          Start-Sleep -Seconds 3
-          Write-Host "=== BẤM LINK ĐỂ ĐĂNG NHẬP TAILSCALE ==="
-          Start-Sleep -Seconds 60
-        continue-on-error: true
-
-      - name: Bật RDP + Tạo màn hình ảo
-        run: |
-          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -value 0
-          Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
-          Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -value 0
-          $username = $env:USERNAME
-          net user $username "Admin123!"
-          cmdkey /generic:localhost /user:$username /pass:"Admin123!"
-          Start-Process "mstsc" -ArgumentList "/v:localhost /w:1920 /h:1080" -NoNewWindow
-          Start-Sleep -Seconds 20
-          Write-Host "Username RDP: $username"
-          Write-Host "Password RDP: Admin123!"
-
-      - name: Tải và cài Sunshine
-        run: |
-          curl -L -o sunshine-installer.exe "https://github.com/LizardByte/Sunshine/releases/download/v0.23.1/sunshine-windows-installer.exe"
-          Start-Process -FilePath "sunshine-installer.exe" -ArgumentList "/S" -Wait
+          curl -L -o deeplink-setup.exe "https://www.deeplink.cloud/software/DeeplinkSetup.exe"
+          Start-Process -FilePath "deeplink-setup.exe" -ArgumentList "/S" -Wait
           Start-Sleep -Seconds 10
+          Write-Host "Deeplink đã cài xong!"
 
-      - name: Cấu hình và khởi động Sunshine
+      - name: Khởi động Deeplink và lấy ID
         run: |
-          netsh advfirewall firewall add rule name="Sunshine TCP" dir=in action=allow protocol=TCP localport=47990
-          netsh advfirewall firewall add rule name="Sunshine UDP" dir=in action=allow protocol=UDP localport=47998-48010
-
-          $configDir = "$env:APPDATA\Sunshine"
-          New-Item -ItemType Directory -Force -Path $configDir
-          @"
-          encoder=software
-          capture=wgc
-          username=admin
-          password=admin123
-          "@ | Out-File "$configDir\sunshine.conf" -Encoding utf8
-
-          # Tự tạo tài khoản admin/admin123 luôn không cần nhập tay
-          Start-Process "C:\Program Files\Sunshine\sunshine.exe" -ArgumentList "--creds admin admin123" -Wait -NoNewWindow
-          Start-Sleep -Seconds 5
-
-          Start-Process "C:\Program Files\Sunshine\sunshine.exe"
+          Start-Process "C:\Program Files\Deeplink\Deeplink.exe" -NoNewWindow
           Start-Sleep -Seconds 15
-
-          $process = Get-Process sunshine -ErrorAction SilentlyContinue
-          if ($process) {
-            Write-Host "Sunshine đang chạy!"
-          } else {
-            Write-Host "Sunshine CHƯA chạy!"
-          }
-
-      - name: Hiện thông tin kết nối
-        run: |
-          $ip = & "C:\Program Files\Tailscale\tailscale.exe" ip -4
-          $username = $env:USERNAME
           Write-Host "=========================================="
-          Write-Host "CÁCH 1 - RDP:"
-          Write-Host "IP: $ip"
-          Write-Host "Username: $username"
-          Write-Host "Password: Admin123!"
-          Write-Host "------------------------------------------"
-          Write-Host "CÁCH 2 - MOONLIGHT:"
-          Write-Host "IP: $ip"
-          Write-Host "Vào: https://$($ip):47990"
-          Write-Host "Username: admin | Password: admin123"
+          Write-Host "Deeplink đang chạy!"
+          Write-Host "Mở app Deeplink trên điện thoại"
+          Write-Host "Bấm kết nối -> nhập ID hiển thị trên đây"
           Write-Host "=========================================="
 
       - name: Giữ session sống
