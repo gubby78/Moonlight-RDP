@@ -11,19 +11,23 @@ jobs:
     steps:
       - name: Tải và cài Deeplink
         run: |
-          curl -L -o deeplink-setup.exe "https://www.deeplink.cloud/software/DeeplinkSetup.exe"
+          curl -L -k -o deeplink-setup.exe "https://download.deeplink.cloud/1.0.4.2/DeepLinkSetup.exe"
           Start-Process -FilePath "deeplink-setup.exe" -ArgumentList "/S" -Wait
-          Start-Sleep -Seconds 10
+          Start-Sleep -Seconds 15
           Write-Host "Deeplink đã cài xong!"
 
       - name: Khởi động Deeplink và lấy ID
         run: |
-          Start-Process "C:\Program Files\Deeplink\Deeplink.exe" -NoNewWindow
-          Start-Sleep -Seconds 15
+          Start-Process "C:\Program Files\DeepLink\DeepLink.exe" -NoNewWindow
+          Start-Sleep -Seconds 20
+
+          # Đọc ID từ registry Deeplink
+          $id = (Get-ItemProperty -Path "HKCU:\Software\DeepLink" -Name "DeviceID" -ErrorAction SilentlyContinue).DeviceID
+          $pass = (Get-ItemProperty -Path "HKCU:\Software\DeepLink" -Name "Password" -ErrorAction SilentlyContinue).Password
+
           Write-Host "=========================================="
-          Write-Host "Deeplink đang chạy!"
-          Write-Host "Mở app Deeplink trên điện thoại"
-          Write-Host "Bấm kết nối -> nhập ID hiển thị trên đây"
+          Write-Host "DEEPLINK ID: $id"
+          Write-Host "DEEPLINK PASSWORD: $pass"
           Write-Host "=========================================="
 
       - name: Giữ session sống
