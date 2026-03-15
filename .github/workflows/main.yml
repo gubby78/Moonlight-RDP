@@ -11,14 +11,7 @@ jobs:
     steps:
       - name: Tải và cài Deeplink
         run: |
-          # Link trực tiếp từ server download chính thức 117MB
-          curl -L -o deeplink-setup.exe "https://download.deeplink.cloud/DeeplinkSetup.exe"
-          $size = (Get-Item deeplink-setup.exe).Length
-          Write-Host "File size: $size bytes"
-          if ($size -lt 1000000) {
-            Write-Host "File quá nhỏ, thử link khác..."
-            curl -L -o deeplink-setup.exe "https://download.deeplink.cloud/1.0.3.1/DeepLink_Setup_win64_1.0.3.1.exe"
-          }
+          curl -L -k -o deeplink-setup.exe "https://download.deeplink.cloud/DeeplinkSetup.exe"
           Start-Process -FilePath "deeplink-setup.exe" -ArgumentList "/S" -Wait
           Start-Sleep -Seconds 15
           Write-Host "Deeplink đã cài xong!"
