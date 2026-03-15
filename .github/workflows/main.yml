@@ -23,16 +23,27 @@ jobs:
           Start-Sleep -Seconds 60
         continue-on-error: true
 
-      - name: Bật RDP + Đặt mật khẩu Windows
+      - name: Cài Virtual Display Driver
+        run: |
+          # Tải virtual display driver
+          curl -L -o vdd.zip "https://github.com/itsmikethetech/Virtual-Display-Driver/releases/download/24.12.13/IddSampleDriver.zip"
+          Expand-Archive -Path vdd.zip -DestinationPath "C:\vdd"
+          
+          # Cài driver
+          $cert = "C:\vdd\IddSampleDriver\IddSampleDriver.cer"
+          Import-Certificate -FilePath $cert -CertStoreLocation "Cert:\LocalMachine\TrustedPublisher"
+          Import-Certificate -FilePath $cert -CertStoreLocation "Cert:\LocalMachine\Root"
+          pnputil /add-driver "C:\vdd\IddSampleDriver\IddSampleDriver.inf" /install
+          Start-Sleep -Seconds 5
+          Write-Host "Virtual Display đã cài xong!"
+
+      - name: Bật RDP
         run: |
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' -name "fDenyTSConnections" -value 0
           Enable-NetFirewallRule -DisplayGroup "Remote Desktop"
           Set-ItemProperty -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server\WinStations\RDP-Tcp' -name "UserAuthentication" -value 0
           $username = $env:USERNAME
           net user $username "Admin123!"
-          cmdkey /generic:localhost /user:$username /pass:"Admin123!"
-          Start-Process "mstsc" -ArgumentList "/v:localhost /f" -NoNewWindow
-          Start-Sleep -Seconds 15
           Write-Host "Username RDP: $username"
           Write-Host "Password RDP: Admin123!"
 
@@ -52,6 +63,7 @@ jobs:
           New-Item -ItemType Directory -Force -Path $configDir
           @"
           encoder=software
+          capture=wgc
           username=admin
           password=admin123
           "@ | Out-File "$configDir\sunshine.conf" -Encoding utf8
