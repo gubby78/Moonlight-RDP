@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: Tải và cài Deeplink
         run: |
-          curl -L -k -o deeplink-setup.exe "https://download.deeplink.cloud/1.0.4.2/DeepLinkSetup.exe"
+          curl -L -k -o deeplink-setup.exe "https://download.deeplink.cloud/DeepLink_Setup_win64_1.0.2.9.exe"
           Start-Process -FilePath "deeplink-setup.exe" -ArgumentList "/S" -Wait
           Start-Sleep -Seconds 15
           Write-Host "Deeplink đã cài xong!"
@@ -21,7 +21,6 @@ jobs:
           Start-Process "C:\Program Files\DeepLink\DeepLink.exe" -NoNewWindow
           Start-Sleep -Seconds 20
 
-          # Đọc ID từ registry Deeplink
           $id = (Get-ItemProperty -Path "HKCU:\Software\DeepLink" -Name "DeviceID" -ErrorAction SilentlyContinue).DeviceID
           $pass = (Get-ItemProperty -Path "HKCU:\Software\DeepLink" -Name "Password" -ErrorAction SilentlyContinue).Password
 
